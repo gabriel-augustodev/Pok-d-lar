@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/pokemon_model.dart';
 import '../services/exchange_service.dart';
 import '../services/pokemon_service.dart';
+import '../services/tts_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/pokedex_app_bar.dart';
 import '../widgets/lights_decorative.dart';
@@ -32,6 +33,13 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    // Parar a fala ao sair da tela
+    TTSService.stop();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -135,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
             isTranslating: _isTranslating,
           ),
           const SizedBox(height: 20),
-          const ControlButtons(),
+          ControlButtons(pokemon: _pokemon), // Passa o Pokémon para os botões
         ],
       ),
     );
