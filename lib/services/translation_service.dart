@@ -2,6 +2,32 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class TranslationService {
+  // Função para corrigir ortografia em português
+  static String fixPortugueseSpelling(String text) {
+    return text
+        .replaceAll('Electrizado', 'Eletrizado')
+        .replaceAll('ELECTRIZADO', 'ELETRIZADO')
+        .replaceAll('electrizado', 'eletrizado')
+        .replaceAll('Electrizada', 'Eletrizada')
+        .replaceAll('ELECTRIZADA', 'ELETRIZADA')
+        .replaceAll('electrizada', 'eletrizada')
+        .replaceAll('Rayo', 'Raio')
+        .replaceAll('RAYO', 'RAIO')
+        .replaceAll('rayo', 'raio')
+        .replaceAll('Electrico', 'Elétrico')
+        .replaceAll('ELECTRICO', 'ELÉTRICO')
+        .replaceAll('electrico', 'elétrico')
+        .replaceAll('eletrico', 'elétrico')
+        .replaceAll('Eletrico', 'Elétrico')
+        .replaceAll('ELETRICO', 'ELÉTRICO')
+        .replaceAll('Flama', 'Chama')
+        .replaceAll('flama', 'chama')
+        .replaceAll('Tierra', 'Terra')
+        .replaceAll('tierra', 'terra')
+        .replaceAll('Agua', 'Água')
+        .replaceAll('agua', 'água');
+  }
+
   // Mapeamento de categorias comuns para tradução rápida
   static const Map<String, String> _commonCategories = {
     'Seed': 'Semente',
@@ -42,41 +68,30 @@ class TranslationService {
     'Megaton': 'Megatonelada',
     'Mythical': 'Mítico',
     'Legendary': 'Lendário',
+    'Thunderbolt': 'Raio',
+    'Lightning': 'Relâmpago',
+    'Bolt': 'Raio',
   };
 
-  static String fixPortugueseSpelling(String text) {
-    return text
-        .replaceAll('Electrizado', 'Eletrizado')
-        .replaceAll('ELECTRIZADO', 'ELETRIZADO')
-        .replaceAll('electrizado', 'eletrizado')
-        .replaceAll('Electrizada', 'Eletrizada')
-        .replaceAll('ELECTRIZADA', 'ELETRIZADA')
-        .replaceAll('electrizada', 'eletrizada')
-        .replaceAll('Electrico', 'Elétrico')
-        .replaceAll('ELECTRICO', 'ELÉTRICO')
-        .replaceAll('electrico', 'elétrico')
-        .replaceAll('eletrico', 'elétrico')
-        .replaceAll('Eletrico', 'Elétrico')
-        .replaceAll('ELETRICO', 'ELÉTRICO');
-  }
-
   static Future<String> translateCategory(String englishCategory) async {
+    // Verifica no dicionário primeiro
     if (_commonCategories.containsKey(englishCategory)) {
       return _commonCategories[englishCategory]!;
     }
 
+    // Tenta traduzir automaticamente
     String translated = await translateWithMultipleAPIs(englishCategory);
     return fixPortugueseSpelling(translated);
   }
 
   static Future<String> translateWithMultipleAPIs(String text) async {
-    final List<Future<String?>> attempts = [
+    final List<Future<String?>> translationAttempts = [
       _translateWithLibreTranslate(text),
       _translateWithMyMemory(text),
       _translateWithLingva(text),
     ];
 
-    for (var attempt in attempts) {
+    for (var attempt in translationAttempts) {
       try {
         final result = await attempt.timeout(const Duration(seconds: 5));
         if (result != null && result.isNotEmpty && result != text) {
